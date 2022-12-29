@@ -44,9 +44,9 @@
 #include <fmt/core.h>
 
 #include <QDesktopServices>
+#include <QLineEdit>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QLineEdit>
 #include <QTreeWidgetItem>
 #include <QUrl>
 
@@ -74,8 +74,9 @@ MainWindow::MainWindow(QWidget* parent)
 
                 // Iterate through changed options,
                 // and generate cmd to apply changes.
+                auto* tree_options = m_ui->treeOptions;
                 for (auto&& option_name : m_change_list) {
-                    const auto& items = m_ui->treeOptions->findItems(option_name, Qt::MatchExactly, TreeCol::Name);
+                    const auto& items = tree_options->findItems(option_name, Qt::MatchExactly, TreeCol::Name);
                     if (!items.isEmpty()) {
                         const auto& found_item = items.at(0);
 
@@ -83,7 +84,7 @@ MainWindow::MainWindow(QWidget* parent)
                         utils::replace_all(option_name_str, ".", "/");
                         option_name_str = fmt::format("{}/{}", SysctlOption::PROC_PATH, option_name_str);
 
-                        const auto& bash_line  = fmt::format("echo \"{}\" > {} && ", found_item->text(TreeCol::Value).toStdString(), option_name_str);
+                        const auto& bash_line = fmt::format("echo \"{}\" > {} && ", found_item->text(TreeCol::Value).toStdString(), option_name_str);
 
                         bash_script += bash_line;
                     }
@@ -96,14 +97,31 @@ MainWindow::MainWindow(QWidget* parent)
 
                 utils::runCmdTerminal(fmt::format("{}", bash_script).c_str(), true);
 
-                // Fetch new changes.
-                m_change_list.erase(m_change_list.begin(), m_change_list.end());
+                // Convert to vector of std::string
+                std::vector<std::string> change_list(static_cast<std::size_t>(m_change_list.size()));
+                for (int i = 0; i < m_change_list.size(); ++i) {
+                    change_list[static_cast<std::size_t>(i)] = std::move(m_change_list[i].toStdString());
+                }
+
+                // Fetch new changes
                 m_options.clear();
                 m_options = std::move(SysctlOption::get_options());
 
+                // Go through change_list and remove changed ones
+                for (auto&& option_name : change_list) {
+                    if (auto result = ranges::find_if(m_options, [&option_name](auto&& option) { return option_name == option.get_name(); }); result != m_options.end()) {
+                        if (auto items = tree_options->findItems(QString{option_name.c_str()}, Qt::MatchExactly, TreeCol::Name); !items.isEmpty()) {
+                            const auto& item_value = items.at(0)->text(TreeCol::Value).toStdString();
+                            if (item_value == result->get_value()) {
+                                m_change_list.removeOne(QString{option_name.c_str()});
+                            }
+                        }
+                    }
+                }
+
                 // Reset state
                 m_running.store(false, std::memory_order_relaxed);
-                m_ui->ok->setEnabled(true);
+                m_ui->ok->setEnabled(!m_change_list.isEmpty());
             }
         }
     });

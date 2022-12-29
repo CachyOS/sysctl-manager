@@ -19,8 +19,8 @@
 #include "utils.hpp"
 
 #include <algorithm>  // for transform
-#include <cstdio>     // for FILE, fclose, fopen, fseek
 #include <cstdint>    // for int32_t
+#include <cstdio>     // for FILE, fclose, fopen, fseek
 #include <unistd.h>   // for getuid
 
 #include <fmt/core.h>

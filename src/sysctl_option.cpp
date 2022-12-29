@@ -19,9 +19,9 @@
 #include "sysctl_option.hpp"
 #include "utils.hpp"
 
-#include <string>
 #include <array>
 #include <fstream>
+#include <string>
 
 #include <fmt/compile.h>
 #include <fmt/core.h>
@@ -49,7 +49,7 @@ namespace fs = std::filesystem;
 namespace {
 
 static constexpr std::string_view DOC_ENDPOINT = "https://www.kernel.org/doc/html/latest/admin-guide/sysctl";
-static constexpr std::array<std::string_view, 3> DEPRECATED {
+static constexpr std::array<std::string_view, 3> DEPRECATED{
     "base_reachable_time",
     "retrans_time",
     ""
@@ -78,61 +78,61 @@ constexpr inline std::string_view get_category(const std::string_view& entry) no
     return entry.substr(0, entry.find_first_of('/'));
 }
 
-}
+}  // namespace
 
 std::vector<SysctlOption> SysctlOption::get_options() noexcept {
     std::vector<SysctlOption> options{};
 
     for (const auto& dir_entry : fs::recursive_directory_iterator{PROC_PATH}) {
-      if (fs::is_directory(dir_entry)) {
-        // Skip directories
-        continue;
-      }
+        if (fs::is_directory(dir_entry)) {
+            // Skip directories
+            continue;
+        }
 
-      // Remove proc path, to leave just the option path,
-      // within the proc directory.
-      std::string_view file_path = dir_entry.path().c_str();
-      if (file_path.starts_with(PROC_PATH)) {
-        file_path.remove_prefix(PROC_PATH.size());
-      }
+        // Remove proc path, to leave just the option path,
+        // within the proc directory.
+        std::string_view file_path = dir_entry.path().c_str();
+        if (file_path.starts_with(PROC_PATH)) {
+            file_path.remove_prefix(PROC_PATH.size());
+        }
 
-      // Skip `debug` and `dev`.
-      if (file_path.starts_with("debug") || file_path.starts_with("dev")) {
-          continue;
-      }
+        // Skip `debug` and `dev`.
+        if (file_path.starts_with("debug") || file_path.starts_with("dev")) {
+            continue;
+        }
 
-      // Skip deprecated.
-      if (ranges::contains(DEPRECATED, dir_entry.path().filename())) {
-          continue;
-      }
+        // Skip deprecated.
+        if (ranges::contains(DEPRECATED, dir_entry.path().filename())) {
+            continue;
+        }
 
-      // Generate doc link.
-      std::string&& doc_link = fmt::format("{}/{}.html{}", DOC_ENDPOINT, get_category(file_path), get_appendix_if_available(file_path));
+        // Generate doc link.
+        std::string&& doc_link = fmt::format("{}/{}.html{}", DOC_ENDPOINT, get_category(file_path), get_appendix_if_available(file_path));
 
-      // Parse option value.
-      std::string&& option_value{"nil"};
-      std::string file_content{};
+        // Parse option value.
+        std::string&& option_value{"nil"};
+        std::string file_content{};
 
-      // Skip if failed to open file descriptor.
-      std::ifstream file_stream{dir_entry.path().c_str()};
-      if (!file_stream.is_open()) {
-          continue;
-      }
-      //auto&& file_content = utils::read_whole_file(dir_entry.path().c_str());
-      //if (file_content.empty()) {
-      if (!std::getline(file_stream, file_content)) {
-          fmt::print(stderr, "Failed to read := '{}'\n", dir_entry.path().c_str());
-          continue;
-      }
-      option_value = std::move(file_content);
-      utils::replace_all(option_value, "\t", " ");
+        // Skip if failed to open file descriptor.
+        std::ifstream file_stream{dir_entry.path().c_str()};
+        if (!file_stream.is_open()) {
+            continue;
+        }
+        // auto&& file_content = utils::read_whole_file(dir_entry.path().c_str());
+        // if (file_content.empty()) {
+        if (!std::getline(file_stream, file_content)) {
+            fmt::print(stderr, "Failed to read := '{}'\n", dir_entry.path().c_str());
+            continue;
+        }
+        option_value = std::move(file_content);
+        utils::replace_all(option_value, "\t", " ");
 
-      // Option name is path, with path delimeters('/') replaced with '.'.
-      std::string option_name{file_path};
-      utils::replace_all(option_name, "/", ".");
+        // Option name is path, with path delimeters('/') replaced with '.'.
+        std::string option_name{file_path};
+        utils::replace_all(option_name, "/", ".");
 
-      auto option_obj = SysctlOption{file_path, option_name.data(), std::move(option_value), std::move(doc_link)};
-      options.emplace_back(std::move(option_obj));
+        auto option_obj = SysctlOption{file_path, option_name.data(), std::move(option_value), std::move(doc_link)};
+        options.emplace_back(std::move(option_obj));
     }
 
     return options;
