@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD polkit Policy Configuration 1.0//EN"
+"http://www.freedesktop.org/software/polkit/policyconfig-1.dtd">
+<policyconfig>
+
+  <vendor>cachyos-sysctl-manager</vendor>
+  <vendor_url>https://github.com/CachyOS/sysctl-manager</vendor_url>
+
+  <action id="org.cachyos.cachyos-sysctl-manager.pkexec.policy.run-root-terminal">
+    <description>Apply sysctl options</description>
+    <message>Authentication is required to apply options</message>
+    <icon_name>cachyos-sysctl-manager</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/cachyos-sysctl-manager/rootshell.sh</annotate>
+  </action>
+
+</policyconfig>

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=CachyOS Sysctl Manager
+GenericName=Sysctl Manager
+Keywords=cachyos;system;kernel;sysctl;
+Exec=cachyos-sysctl-manager
+Comment=Manage sysctl options
+Icon=cachyos-sysctl-manager
+Terminal=false
+StartupNotify=false
+Categories=Qt;System;
+X-AppStream-Ignore=true
