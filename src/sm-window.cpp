@@ -96,6 +96,11 @@ MainWindow::MainWindow(QWidget* parent)
 
                 utils::runCmdTerminal(fmt::format("{}", bash_script).c_str(), true);
 
+                // Fetch new changes.
+                m_change_list.erase(m_change_list.begin(), m_change_list.end());
+                m_options.clear();
+                m_options = std::move(SysctlOption::get_options());
+
                 // Reset state
                 m_running.store(false, std::memory_order_relaxed);
                 m_ui->ok->setEnabled(true);
@@ -125,7 +130,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto a2 = std::async(std::launch::deferred, [&] {
         std::lock_guard<std::mutex> guard(m_mutex);
 
-        m_options = SysctlOption::get_options();
+        m_options = std::move(SysctlOption::get_options());
         for (auto&& sysctl_option : m_options) {
             auto widget_item = new QTreeWidgetItem(tree_options);
             widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
