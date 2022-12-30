@@ -228,16 +228,17 @@ void MainWindow::item_changed(QTreeWidgetItem* item, int) noexcept {
 // Build the change_list when selecting on item in the tree
 void MainWindow::buildChangeList(QTreeWidgetItem* item) noexcept {
     const auto& item_value = item->text(TreeCol::Value).toStdString();
-    const auto& item_name  = item->text(TreeCol::Name);
+    const auto& item_name  = item->text(TreeCol::Name).toStdString();
 
     for (auto&& sysctl_option : m_options) {
+        if (item_name != sysctl_option.get_name()) { continue; }
         if (item_value != sysctl_option.get_value()) {
             m_ui->ok->setEnabled(true);
-            m_change_list.append(item_name);
+            m_change_list.append(QString{item_name.c_str()});
             return;
         }
         if (item_value == sysctl_option.get_value()) {
-            m_change_list.removeOne(item_name);
+            m_change_list.removeOne(QString{item_name.c_str()});
             return;
         }
     }
