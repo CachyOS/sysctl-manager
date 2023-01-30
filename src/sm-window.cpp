@@ -100,12 +100,12 @@ MainWindow::MainWindow(QWidget* parent)
                 // Convert to vector of std::string
                 std::vector<std::string> change_list(static_cast<std::size_t>(m_change_list.size()));
                 for (int i = 0; i < m_change_list.size(); ++i) {
-                    change_list[static_cast<std::size_t>(i)] = std::move(m_change_list[i].toStdString());
+                    change_list[static_cast<std::size_t>(i)] = m_change_list[i].toStdString();
                 }
 
                 // Fetch new changes
                 m_options.clear();
-                m_options = std::move(SysctlOption::get_options());
+                m_options = SysctlOption::get_options();
 
                 // Go through change_list and remove changed ones
                 for (auto&& option_name : change_list) {
@@ -148,7 +148,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto a2 = std::async(std::launch::deferred, [&] {
         std::lock_guard<std::mutex> guard(m_mutex);
 
-        m_options = std::move(SysctlOption::get_options());
+        m_options = SysctlOption::get_options();
         for (auto&& sysctl_option : m_options) {
             auto widget_item = new QTreeWidgetItem(tree_options);
             widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
