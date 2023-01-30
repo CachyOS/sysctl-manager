@@ -5,12 +5,10 @@ project('cachyos-sysctl-manager', 'cpp',
         default_options: ['cpp_std=c++20',
                           'buildtype=debugoptimized',
                           'warning_level=3',
-                          'werror=true',
+                          'werror=false',
                           'b_ndebug=if-release'])
 
 is_debug_build     = get_option('buildtype').startswith('debug')
-is_dev_environment = get_option('devenv')
-is_dummy_pkg_impl  = get_option('pkg_dummy_impl')
 cc = meson.get_compiler('cpp')
 if cc.get_id() == 'clang'
     specific_cc_flags = [
@@ -30,15 +28,12 @@ if is_debug_build
 endif
 add_global_arguments('-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00', language : 'cpp')
 
-if not is_dev_environment
-    add_global_arguments('-DNDEVENV', language : 'cpp')
-endif
-
 qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Widgets'])
 
 # Common dependencies
 fmt = dependency('fmt', version : ['>=8.0.0'], fallback : ['fmt', 'fmt_dep'])
+ranges = dependency('range-v3', version : ['>=0.11.0'], fallback : ['range-v3', 'range_dep'])
 
 src_files = files(
     'src/utils.hpp', 'src/utils.cpp',
@@ -110,11 +105,7 @@ endif
 
 add_project_arguments(cc.get_supported_arguments(possible_cc_flags), language : 'cpp')
 
-deps = [qt5_dep, fmt]
-if cc.get_id() == 'clang'
-  ranges = dependency('range-v3', version : ['>=0.11.0'])
-  deps += [ranges]
-endif
+deps = [qt5_dep, fmt, ranges]
 
 prep = qt5.preprocess(
   moc_headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.

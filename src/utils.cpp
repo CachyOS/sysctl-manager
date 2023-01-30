@@ -21,7 +21,6 @@
 #include <algorithm>  // for transform
 #include <cstdint>    // for int32_t
 #include <cstdio>     // for FILE, fclose, fopen, fseek
-#include <unistd.h>   // for getuid
 
 #include <fmt/core.h>
 
@@ -68,14 +67,6 @@
 #endif
 
 namespace utils {
-
-bool check_root() noexcept {
-#ifdef NDEVENV
-    return getuid() == 0;
-#else
-    return true;
-#endif
-}
 
 auto make_multiline(const std::string_view& str, char delim) noexcept -> std::vector<std::string> {
     static constexpr auto functor = [](auto&& rng) {
