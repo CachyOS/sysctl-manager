@@ -13,11 +13,14 @@ cc = meson.get_compiler('cpp')
 if cc.get_id() == 'clang'
     specific_cc_flags = [
         '-nostdlib++',
-        #'-stdlib=libc++',
+        '-stdlib=libc++',
         '-nodefaultlibs',
+        '-fexperimental-library',
+        '-fstrict-vtable-pointers',
+        '-fexperimental-new-pass-manager',
     ]
     specific_link_flags = [
-        '-fuse-ld=lld',
+        '-stdlib=libc++',
     ]
     add_global_arguments(cc.get_supported_arguments(specific_cc_flags), language : 'cpp')
     add_global_link_arguments(cc.get_supported_link_arguments(specific_link_flags), language : 'cpp')
@@ -25,6 +28,8 @@ endif
 
 if is_debug_build
     add_global_arguments('-D_GLIBCXX_ASSERTIONS', language : 'cpp')
+    add_global_arguments('-D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1', language : 'cpp')
+    add_global_arguments('-D_LIBCPP_ENABLE_ASSERTIONS=1', language : 'cpp')
 endif
 add_global_arguments('-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00', language : 'cpp')
 
@@ -91,10 +96,12 @@ if not is_debug_build
       possible_cc_flags += [
          '-flto',
          '-fwhole-program',
+         '-fuse-linker-plugin',
       ]
    else
       possible_cc_flags += [
          '-flto=thin',
+         '-fwhole-program-vtables',
       ]
    endif
 
@@ -107,8 +114,8 @@ add_project_arguments(cc.get_supported_arguments(possible_cc_flags), language : 
 
 deps = [qt6_dep, fmt, ranges]
 
-prep = qt6.preprocess(
-  moc_headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.
+prep = qt6.compile_moc(
+  headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.
 )
 # XML files that need to be compiled with the uic tol.
 prep += qt6.compile_ui(sources : ['src/sm-window.ui'])
