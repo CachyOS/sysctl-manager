@@ -24,6 +24,19 @@ add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00)
 # Generate compile_commands.json to make it easier to work with clang based tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  add_compile_options(-nostdlib++ -stdlib=libc++ -nodefaultlibs -fexperimental-library)
+  add_link_options(-stdlib=libc++)
+
+  add_compile_options(-fstrict-vtable-pointers)
+
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+    # Set new experimental pass manager, it's a performance, build time and binary size win.
+    # Can be removed after https://reviews.llvm.org/D66490 merged and released to at least two versions of clang.
+    add_compile_options(-fexperimental-new-pass-manager)
+  endif()
+endif()
+
 option(ENABLE_IPO "Enable Interprocedural Optimization, aka Link Time Optimization (LTO)" OFF)
 
 if(ENABLE_IPO)
@@ -50,4 +63,6 @@ endif()
 # Enables STL container checker if not building a release.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_definitions(-D_GLIBCXX_ASSERTIONS)
+  add_definitions(-D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1)
+  add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
 endif()
