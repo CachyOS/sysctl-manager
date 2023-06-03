@@ -37,7 +37,7 @@ qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Widgets'])
 
 # Common dependencies
-fmt = dependency('fmt', version : ['>=8.0.0'], fallback : ['fmt', 'fmt_dep'])
+fmt = dependency('fmt', version : ['>=10.0.0'], fallback : ['fmt', 'fmt_dep'])
 ranges = dependency('range-v3', version : ['>=0.11.0'], fallback : ['range-v3', 'range_dep'])
 
 src_files = files(
