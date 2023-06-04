@@ -108,7 +108,7 @@ class MainWindow final : public QMainWindow {
     QThread* m_worker_th = new QThread(this);
     Work* m_worker{nullptr};
 
-    std::unique_ptr<Ui::MainWindow> m_ui     = std::make_unique<Ui::MainWindow>();
+    std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
     std::vector<SysctlOption> m_options{};
 
     void buildChangeList(QTreeWidgetItem* item) noexcept;

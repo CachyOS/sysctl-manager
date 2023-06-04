@@ -52,8 +52,7 @@ static constexpr std::string_view DOC_ENDPOINT = "https://www.kernel.org/doc/htm
 static constexpr std::array<std::string_view, 3> DEPRECATED{
     "base_reachable_time",
     "retrans_time",
-    ""
-};
+    ""};
 
 constexpr inline std::string_view get_appendix_if_available(const std::string_view& entry) noexcept {
     if (entry.starts_with("net/ipv4")) {

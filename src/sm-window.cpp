@@ -189,7 +189,9 @@ MainWindow::~MainWindow() {
 // Find package in view
 void MainWindow::find_options() noexcept {
     QString word = m_ui->search_option->text();
+    /* clang-format off */
     if (word.length() == 1) { return; }
+    /* clang-format on */
 
     auto* tree_options = m_ui->treeOptions;
     auto found_items   = tree_options->findItems(word, Qt::MatchContains, TreeCol::Name);
@@ -231,7 +233,10 @@ void MainWindow::buildChangeList(QTreeWidgetItem* item) noexcept {
     const auto& item_name  = item->text(TreeCol::Name).toStdString();
 
     for (auto&& sysctl_option : m_options) {
+        /* clang-format off */
         if (item_name != sysctl_option.get_name()) { continue; }
+        /* clang-format on */
+
         if (item_value != sysctl_option.get_value()) {
             m_ui->ok->setEnabled(true);
             m_change_list.append(QString{item_name.c_str()});
