@@ -19,11 +19,11 @@
 #include "sysctl_option.hpp"
 #include "utils.hpp"
 
-#include <array>
-#include <fstream>
-#include <string>
+#include <array>       // for array
+#include <filesystem>  // for recursive_directory_iterator, is_directory
+#include <fstream>     // for ifstream
+#include <string>      // for string
 
-#include <fmt/compile.h>
 #include <fmt/core.h>
 
 #if defined(__clang__)

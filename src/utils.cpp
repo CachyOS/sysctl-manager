@@ -18,10 +18,8 @@
 
 #include "utils.hpp"
 
-#include <cstdint>    // for int32_t
-#include <cstdio>     // for FILE, fclose, fopen, fseek
-
-#include <fmt/core.h>
+#include <cstdint>  // for int32_t
+#include <cstdio>   // for FILE, fclose, fopen, fseek
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -66,7 +64,7 @@ auto join_vec(const std::span<std::string_view>& lines, const std::string_view&&
     return lines | ranges::views::join(delim) | ranges::to<std::string>();
 }
 
-int runCmdTerminal(QString cmd, bool escalate) noexcept {
+auto runCmdTerminal(QString cmd, bool escalate) noexcept -> std::int32_t {
     QProcess proc;
     cmd += "; read -p 'Press enter to exit'";
     auto paramlist = QStringList();

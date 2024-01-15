@@ -20,7 +20,6 @@
 #include "sysctl_option.hpp"
 #include "utils.hpp"
 
-#include <future>
 #include <thread>
 
 #if defined(__clang__)
