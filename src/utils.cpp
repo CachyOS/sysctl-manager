@@ -18,7 +18,6 @@
 
 #include "utils.hpp"
 
-#include <algorithm>  // for transform
 #include <cstdint>    // for int32_t
 #include <cstdio>     // for FILE, fclose, fopen, fseek
 
@@ -34,13 +33,8 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif
 
-#include <range/v3/algorithm/for_each.hpp>
-#include <range/v3/algorithm/reverse.hpp>
 #include <range/v3/range/conversion.hpp>
-#include <range/v3/view/filter.hpp>
 #include <range/v3/view/join.hpp>
-#include <range/v3/view/split.hpp>
-#include <range/v3/view/transform.hpp>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
@@ -67,21 +61,6 @@
 #endif
 
 namespace utils {
-
-auto make_multiline(const std::string_view& str, char delim) noexcept -> std::vector<std::string> {
-    static constexpr auto functor = [](auto&& rng) {
-        return std::string_view(&*rng.begin(), static_cast<size_t>(ranges::distance(rng)));
-    };
-    static constexpr auto second = [](auto&& rng) { return rng != ""; };
-
-    auto&& view_res = str
-        | ranges::views::split(delim)
-        | ranges::views::transform(functor);
-
-    std::vector<std::string> lines{};
-    ranges::for_each(view_res | ranges::views::filter(second), [&](auto&& rng) { lines.emplace_back(rng); });
-    return lines;
-}
 
 auto join_vec(const std::span<std::string_view>& lines, const std::string_view&& delim) noexcept -> std::string {
     return lines | ranges::views::join(delim) | ranges::to<std::string>();

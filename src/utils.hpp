@@ -43,8 +43,6 @@
 
 namespace utils {
 
-[[nodiscard]] bool check_root() noexcept;
-[[nodiscard]] auto make_multiline(const std::string_view& str, char delim = '\n') noexcept -> std::vector<std::string>;
 [[nodiscard]] auto join_vec(const std::span<std::string_view>& lines, const std::string_view&& delim) noexcept -> std::string;
 [[nodiscard]] auto read_whole_file(const std::string_view& filepath) noexcept -> std::string;
 
