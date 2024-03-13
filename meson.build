@@ -33,8 +33,8 @@ if is_debug_build
 endif
 add_global_arguments('-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00', language : 'cpp')
 
-qt5 = import('qt5')
-qt5_dep = dependency('qt5', modules: ['Widgets'])
+qt6 = import('qt6')
+qt6_dep = dependency('qt6', modules: ['Widgets'])
 
 # Common dependencies
 fmt = dependency('fmt', version : ['>=10.0.0'], fallback : ['fmt', 'fmt_dep'])
@@ -112,13 +112,13 @@ endif
 
 add_project_arguments(cc.get_supported_arguments(possible_cc_flags), language : 'cpp')
 
-deps = [qt5_dep, fmt, ranges]
+deps = [qt6_dep, fmt, ranges]
 
-prep = qt5.preprocess(
-  moc_headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.
+prep = qt6.compile_moc(
+  headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.
 )
 # XML files that need to be compiled with the uic tol.
-prep += qt5.compile_ui(sources : ['src/sm-window.ui'])
+prep += qt6.compile_ui(sources : ['src/sm-window.ui'])
 
 src_files += [prep]
 executable(
