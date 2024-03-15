@@ -36,11 +36,11 @@ CPMAddPackage(
 CPMAddPackage(
   NAME range-v3
   GITHUB_REPOSITORY ericniebler/range-v3
-  GIT_TAG 97452bb3eb74a73fc86504421a6a27c92bce6b99
+  GIT_TAG 9aa41d6b8ded2cf5e8007e66a0efd1ab33dbf9a5
   EXCLUDE_FROM_ALL YES
 )
 
-find_package(PolkitQt5-1 REQUIRED)
+find_package(PolkitQt6-1 REQUIRED)
 
 ##
 ## CONFIGURATION
@@ -50,11 +50,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fwhole-program -fuse-linker-plugin")
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=thin -fwhole-program-vtables")
+   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto=thin -fwhole-program-vtables")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -fwhole-program -fuse-linker-plugin")
 endif()
+
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
@@ -63,7 +65,7 @@ target_compile_features(project_options INTERFACE cxx_std_20)
 ##
 ## Target
 ##
-add_executable(${PROJECT_NAME}
+qt_add_executable(${PROJECT_NAME}
     src/utils.hpp src/utils.cpp
     src/sysctl_option.hpp src/sysctl_option.cpp
     src/sm-window.hpp src/sm-window.cpp
