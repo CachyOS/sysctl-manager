@@ -81,7 +81,7 @@ auto generate_script_from_options(QTreeWidget* tree_options, std::span<QString> 
 
 void init_options_tree_widget(QTreeWidget* tree_options, std::span<SysctlOption> options) noexcept {
     for (auto&& sysctl_option : options) {
-        auto* widget_item = new QTreeWidgetItem(tree_options);
+        auto* widget_item = new QTreeWidgetItem(tree_options); // NOLINT
         widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
         widget_item->setText(TreeCol::Value, sysctl_option.get_value().data());
         widget_item->setText(TreeCol::Displayed, QStringLiteral("true"));
