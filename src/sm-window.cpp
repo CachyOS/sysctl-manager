@@ -49,6 +49,48 @@
 #include <QTreeWidgetItem>
 #include <QUrl>
 
+namespace {
+
+auto generate_script_from_options(QTreeWidget* tree_options, std::span<QString> change_list) noexcept -> std::string {
+    std::string bash_script;
+
+    // Iterate through changed options,
+    // and generate cmd to apply changes.
+    for (auto&& option_name : change_list) {
+        const auto& items = tree_options->findItems(option_name, Qt::MatchExactly, TreeCol::Name);
+        /* clang-format off */
+        if (items.isEmpty()) { continue; }
+        /* clang-format on */
+
+        const auto& found_item = items.at(0);
+
+        auto option_name_str = option_name.toStdString();
+        utils::replace_all(option_name_str, ".", "/");
+        option_name_str = fmt::format("{}/{}", SysctlOption::PROC_PATH, option_name_str);
+
+        auto bash_line = fmt::format("echo \"{}\" > {} && ", found_item->text(TreeCol::Value).toStdString(), option_name_str);
+        bash_script += bash_line;
+    }
+
+    // Remove last occurencies of ' && '
+    if (bash_script.ends_with(" && ")) {
+        bash_script.erase(bash_script.size() - 4);
+    }
+    return bash_script;
+}
+
+void init_options_tree_widget(QTreeWidget* tree_options, std::span<SysctlOption> options) noexcept {
+    for (auto&& sysctl_option : options) {
+        auto* widget_item = new QTreeWidgetItem(tree_options);
+        widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
+        widget_item->setText(TreeCol::Value, sysctl_option.get_value().data());
+        widget_item->setText(TreeCol::Displayed, QStringLiteral("true"));
+        widget_item->setFlags(widget_item->flags() | Qt::ItemIsEditable);
+    }
+}
+
+}  // namespace
+
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent) {
     m_ui->setupUi(this);
@@ -69,32 +111,8 @@ MainWindow::MainWindow(QWidget* parent)
             if (m_running.load(std::memory_order_consume) && m_thread_running.load(std::memory_order_consume)) {
                 m_ui->ok->setEnabled(false);
 
-                std::string bash_script;
-
-                // Iterate through changed options,
-                // and generate cmd to apply changes.
-                auto* tree_options = m_ui->treeOptions;
-                for (auto&& option_name : m_change_list) {
-                    const auto& items = tree_options->findItems(option_name, Qt::MatchExactly, TreeCol::Name);
-                    if (!items.isEmpty()) {
-                        const auto& found_item = items.at(0);
-
-                        auto option_name_str = option_name.toStdString();
-                        utils::replace_all(option_name_str, ".", "/");
-                        option_name_str = fmt::format("{}/{}", SysctlOption::PROC_PATH, option_name_str);
-
-                        const auto& bash_line = fmt::format("echo \"{}\" > {} && ", found_item->text(TreeCol::Value).toStdString(), option_name_str);
-
-                        bash_script += bash_line;
-                    }
-                }
-
-                // Remove last occurencies of ' && '
-                if (bash_script.ends_with(" && ")) {
-                    bash_script.erase(bash_script.size() - 4);
-                }
-
-                utils::runCmdTerminal(fmt::format("{}", bash_script).c_str(), true);
+                const auto bash_script = generate_script_from_options(m_ui->treeOptions, std::span{m_change_list});
+                utils::runCmdTerminal(bash_script.c_str(), true);
 
                 // Convert to vector of std::string
                 std::vector<std::string> change_list(static_cast<std::size_t>(m_change_list.size()));
@@ -107,6 +125,7 @@ MainWindow::MainWindow(QWidget* parent)
                 m_options = SysctlOption::get_options();
 
                 // Go through change_list and remove changed ones
+                auto* tree_options = m_ui->treeOptions;
                 for (auto&& option_name : change_list) {
                     if (auto result = ranges::find_if(m_options, [&option_name](auto&& option) { return option_name == option.get_name(); }); result != m_options.end()) {
                         if (auto items = tree_options->findItems(QString{option_name.c_str()}, Qt::MatchExactly, TreeCol::Name); !items.isEmpty()) {
@@ -143,34 +162,27 @@ MainWindow::MainWindow(QWidget* parent)
     tree_options->setEditTriggers(QTreeWidget::NoEditTriggers);
     tree_options->blockSignals(true);
 
+    m_options = SysctlOption::get_options();
+
     // TODO(vnepogodin): parallelize it
     auto a2 = std::async(std::launch::deferred, [&] {
         const std::lock_guard<std::mutex> guard(m_mutex);
-
-        m_options = SysctlOption::get_options();
-        for (auto&& sysctl_option : m_options) {
-            auto* widget_item = new QTreeWidgetItem(tree_options);
-            widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
-            widget_item->setText(TreeCol::Value, sysctl_option.get_value().data());
-            widget_item->setText(TreeCol::Displayed, QStringLiteral("true"));
-            widget_item->setFlags(widget_item->flags() | Qt::ItemIsEditable);
-        }
+        init_options_tree_widget(tree_options, std::span{m_options});
     });
 
     // Connect buttons signal
-    connect(m_ui->cancel, SIGNAL(clicked()), this, SLOT(on_cancel()));
-    connect(m_ui->ok, SIGNAL(clicked()), this, SLOT(on_execute()));
+    connect(m_ui->cancel, &QPushButton::clicked, this, &MainWindow::on_cancel);
+    connect(m_ui->ok, &QPushButton::clicked, this, &MainWindow::on_execute);
 
     // Connect worker thread signals
-    connect(m_worker_th, SIGNAL(finished()), m_worker, SLOT(deleteLater()));
-    connect(m_worker_th, SIGNAL(started()), m_worker, SLOT(doHeavyCalculations()), Qt::QueuedConnection);
+    connect(m_worker_th, &QThread::finished, m_worker, &QObject::deleteLater);
+    connect(m_worker_th, &QThread::started, m_worker, &Work::doHeavyCalculations, Qt::QueuedConnection);
 
     // connect search box
     connect(m_ui->search_option, &QLineEdit::textChanged, this, &MainWindow::find_options);
 
     // Connect tree widget
     connect(tree_options, &QTreeWidget::itemChanged, this, &MainWindow::item_changed);
-    connect(tree_options, &QTreeWidget::itemDoubleClicked, [&](QTreeWidgetItem* item) { m_ui->treeOptions->setCurrentItem(item); });
     connect(tree_options, &QTreeWidget::itemDoubleClicked, this, &MainWindow::on_item_double_clicked);
 
     // Wait for async function to finish
@@ -223,26 +235,26 @@ void MainWindow::on_item_double_clicked(QTreeWidgetItem* item, int column) noexc
 
 // When selecting on item in the list
 void MainWindow::item_changed(QTreeWidgetItem* item, int) noexcept {
-    buildChangeList(item);
+    build_changelist(item);
 }
 
 // Build the change_list when selecting on item in the tree
-void MainWindow::buildChangeList(QTreeWidgetItem* item) noexcept {
-    const auto& item_value = item->text(TreeCol::Value).toStdString();
-    const auto& item_name  = item->text(TreeCol::Name).toStdString();
+void MainWindow::build_changelist(QTreeWidgetItem* item) noexcept {
+    const auto& item_value = item->text(TreeCol::Value);
+    const auto& item_name  = item->text(TreeCol::Name);
 
     for (auto&& sysctl_option : m_options) {
         /* clang-format off */
-        if (item_name != sysctl_option.get_name()) { continue; }
+        if (item_name != sysctl_option.get_name().data()) { continue; }
         /* clang-format on */
 
-        if (item_value != sysctl_option.get_value()) {
+        if (item_value != sysctl_option.get_value().data()) {
             m_ui->ok->setEnabled(true);
-            m_change_list.append(QString{item_name.c_str()});
+            m_change_list.append(item_name);
             return;
         }
-        if (item_value == sysctl_option.get_value()) {
-            m_change_list.removeOne(QString{item_name.c_str()});
+        if (item_value == sysctl_option.get_value().data()) {
+            m_change_list.removeOne(item_name);
             return;
         }
     }

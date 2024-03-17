@@ -64,7 +64,7 @@ class Work final : public QObject {
       : m_func(func) { }
     virtual ~Work() = default;
 
- public slots:
+ public:
     void doHeavyCalculations();
 
  private:
@@ -85,15 +85,6 @@ class MainWindow final : public QMainWindow {
     explicit MainWindow(QWidget* parent = nullptr);
     virtual ~MainWindow();
 
- private slots:
-    void on_cancel() noexcept;
-    void on_execute() noexcept;
-
-    void find_options() noexcept;
-
-    void on_item_double_clicked(QTreeWidgetItem* item, int column) noexcept;
-    void item_changed(QTreeWidgetItem* item, int column) noexcept;
-
  protected:
     void closeEvent(QCloseEvent* event) override;
 
@@ -111,7 +102,15 @@ class MainWindow final : public QMainWindow {
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
     std::vector<SysctlOption> m_options{};
 
-    void buildChangeList(QTreeWidgetItem* item) noexcept;
+    void build_changelist(QTreeWidgetItem* item) noexcept;
+
+    void on_cancel() noexcept;
+    void on_execute() noexcept;
+
+    void find_options() noexcept;
+
+    void on_item_double_clicked(QTreeWidgetItem* item, int column) noexcept;
+    void item_changed(QTreeWidgetItem* item, int column) noexcept;
 };
 
 #endif  // MAINWINDOW_HPP_
