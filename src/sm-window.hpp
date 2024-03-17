@@ -47,7 +47,6 @@
 
 #include <QMainWindow>
 #include <QThread>
-#include <QTimer>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
