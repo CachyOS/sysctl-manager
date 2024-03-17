@@ -26,7 +26,8 @@
 class SysctlOption {
  public:
     consteval SysctlOption() = default;
-    explicit SysctlOption(const std::string_view& raw, const std::string_view& name, std::string&& value, std::string&& doc_link) : m_raw(raw), m_name(name), m_value(std::move(value)), m_doc(std::move(doc_link)) { }
+    explicit SysctlOption(std::string&& raw, std::string&& name, std::string&& value, std::string&& doc_link)
+      : m_raw(std::move(raw)), m_name(std::move(name)), m_value(std::move(value)), m_doc(std::move(doc_link)) { }
 
     static constexpr std::string_view PROC_PATH = "/proc/sys/";
 

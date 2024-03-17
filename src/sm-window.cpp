@@ -145,11 +145,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     // TODO(vnepogodin): parallelize it
     auto a2 = std::async(std::launch::deferred, [&] {
-        std::lock_guard<std::mutex> guard(m_mutex);
+        const std::lock_guard<std::mutex> guard(m_mutex);
 
         m_options = SysctlOption::get_options();
         for (auto&& sysctl_option : m_options) {
-            auto widget_item = new QTreeWidgetItem(tree_options);
+            auto* widget_item = new QTreeWidgetItem(tree_options);
             widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
             widget_item->setText(TreeCol::Value, sysctl_option.get_value().data());
             widget_item->setText(TreeCol::Displayed, QStringLiteral("true"));
@@ -187,7 +187,7 @@ MainWindow::~MainWindow() {
 
 // Find package in view
 void MainWindow::find_options() noexcept {
-    QString word = m_ui->search_option->text();
+    const auto& word = m_ui->search_option->text();
     /* clang-format off */
     if (word.length() == 1) { return; }
     /* clang-format on */
@@ -271,8 +271,9 @@ void Work::doHeavyCalculations() {
 }
 
 void MainWindow::on_execute() noexcept {
-    if (m_running.load(std::memory_order_consume))
+    if (m_running.load(std::memory_order_consume)) {
         return;
+    }
     m_running.store(true, std::memory_order_relaxed);
     m_thread_running.store(true, std::memory_order_relaxed);
     m_cv.notify_all();

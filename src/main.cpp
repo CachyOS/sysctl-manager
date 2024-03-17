@@ -21,7 +21,9 @@
 #include <QApplication>
 #include <QSharedMemory>
 
-bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
+namespace {
+
+bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) noexcept {
     if (!memoryLock.create(1)) {
         memoryLock.attach();
         memoryLock.detach();
@@ -34,6 +36,8 @@ bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
     return false;
 }
 
+}  // namespace
+
 auto main(int argc, char** argv) -> std::int32_t {
     QSharedMemory sharedMemoryLock("CachyOS-SM-lock");
     if (IsInstanceAlreadyRunning(sharedMemoryLock)) {
@@ -45,9 +49,9 @@ auto main(int argc, char** argv) -> std::int32_t {
     QCoreApplication::setApplicationName("CachyOS-SM");
 
     // Set application attributes
-    QApplication app(argc, argv);
+    const QApplication app(argc, argv);
 
     MainWindow w;
     w.show();
-    return app.exec();
+    return app.exec();  // NOLINT
 }

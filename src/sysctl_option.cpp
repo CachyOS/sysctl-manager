@@ -48,13 +48,15 @@ namespace fs = std::filesystem;
 
 namespace {
 
+// NOLINTNEXTLINE
 static constexpr std::string_view DOC_ENDPOINT = "https://www.kernel.org/doc/html/latest/admin-guide/sysctl";
+// NOLINTNEXTLINE
 static constexpr std::array<std::string_view, 3> DEPRECATED{
     "base_reachable_time",
     "retrans_time",
     ""};
 
-constexpr inline std::string_view get_appendix_if_available(const std::string_view& entry) noexcept {
+constexpr std::string_view get_appendix_if_available(std::string_view entry) noexcept {
     if (entry.starts_with("net/ipv4")) {
         return "#proc-sys-net-ipv4-ipv4-settings";
     }
@@ -73,7 +75,7 @@ constexpr inline std::string_view get_appendix_if_available(const std::string_vi
     return "";
 }
 
-constexpr inline std::string_view get_category(const std::string_view& entry) noexcept {
+constexpr std::string_view get_category(std::string_view entry) noexcept {
     return entry.substr(0, entry.find_first_of('/'));
 }
 
@@ -106,7 +108,7 @@ std::vector<SysctlOption> SysctlOption::get_options() noexcept {
         }
 
         // Generate doc link.
-        std::string&& doc_link = fmt::format("{}/{}.html{}", DOC_ENDPOINT, get_category(file_path), get_appendix_if_available(file_path));
+        auto&& doc_link = fmt::format("{}/{}.html{}", DOC_ENDPOINT, get_category(file_path), get_appendix_if_available(file_path));
 
         // Parse option value.
         std::string&& option_value{"nil"};
@@ -130,7 +132,7 @@ std::vector<SysctlOption> SysctlOption::get_options() noexcept {
         std::string option_name{file_path};
         utils::replace_all(option_name, "/", ".");
 
-        auto option_obj = SysctlOption{file_path, option_name.data(), std::move(option_value), std::move(doc_link)};
+        auto option_obj = SysctlOption{std::string{file_path}, std::move(option_name), std::move(option_value), std::move(doc_link)};
         options.emplace_back(std::move(option_obj));
     }
 

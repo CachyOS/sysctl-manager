@@ -88,7 +88,7 @@ auto read_whole_file(const std::string_view& filepath) noexcept -> std::string {
     }
 
     std::fseek(file, 0u, SEEK_END);
-    const std::size_t size = static_cast<std::size_t>(std::ftell(file));
+    const auto size = static_cast<std::size_t>(std::ftell(file));
     std::fseek(file, 0u, SEEK_SET);
 
     std::string buf;

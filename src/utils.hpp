@@ -48,7 +48,7 @@ namespace utils {
 // Runs a command in a terminal, escalates using pkexec if escalate is true
 int runCmdTerminal(QString cmd, bool escalate) noexcept;
 
-inline std::size_t replace_all(std::string& inout, const std::string_view& what, const std::string_view& with) {
+inline std::size_t replace_all(std::string& inout, std::string_view what, std::string_view with) noexcept {
     std::size_t count{};
     std::size_t pos{};
     while (std::string::npos != (pos = inout.find(what.data(), pos, what.length()))) {
@@ -58,7 +58,7 @@ inline std::size_t replace_all(std::string& inout, const std::string_view& what,
     return count;
 }
 
-inline std::size_t remove_all(std::string& inout, const std::string_view& what) {
+inline std::size_t remove_all(std::string& inout, std::string_view what) noexcept {
     return replace_all(inout, what, "");
 }
 
