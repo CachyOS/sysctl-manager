@@ -59,9 +59,9 @@ class Work final : public QObject {
 
  public:
     using function_t = std::function<void()>;
-    explicit Work(function_t func)
-      : m_func(func) { }
-    virtual ~Work() = default;
+    explicit Work(function_t&& func)
+      : m_func(std::move(func)) { }
+    ~Work() = default;
 
  public:
     void doHeavyCalculations();
@@ -88,6 +88,16 @@ class MainWindow final : public QMainWindow {
     void closeEvent(QCloseEvent* event) override;
 
  private:
+    void on_cancel() noexcept;
+    void on_execute() noexcept;
+
+    void build_change_list(QTreeWidgetItem* item) noexcept;
+
+    void find_options() noexcept;
+
+    void on_item_double_clicked(QTreeWidgetItem* item, int column) noexcept;
+    void item_changed(QTreeWidgetItem* item, int column) noexcept;
+
     std::atomic_bool m_running{};
     std::atomic_bool m_thread_running{true};
     std::mutex m_mutex{};
@@ -98,18 +108,8 @@ class MainWindow final : public QMainWindow {
     QThread* m_worker_th = new QThread(this);
     Work* m_worker{nullptr};
 
+    std::vector<SysctlOption> m_options  = SysctlOption::get_options();
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
-    std::vector<SysctlOption> m_options{};
-
-    void build_changelist(QTreeWidgetItem* item) noexcept;
-
-    void on_cancel() noexcept;
-    void on_execute() noexcept;
-
-    void find_options() noexcept;
-
-    void on_item_double_clicked(QTreeWidgetItem* item, int column) noexcept;
-    void item_changed(QTreeWidgetItem* item, int column) noexcept;
 };
 
 #endif  // MAINWINDOW_HPP_

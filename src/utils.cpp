@@ -21,8 +21,9 @@
 #include <cstdint>  // for int32_t
 #include <cstdio>   // for FILE, fclose, fopen, fseek
 
-#include <ranges>  // for ranges::*
-#include <string>  // for string
+#include <fstream>  // for ofstream
+#include <ranges>   // for ranges::*
+#include <string>   // for string
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -81,11 +82,22 @@ auto read_whole_file(std::string_view filepath) noexcept -> std::string {
     const std::size_t read = std::fread(buf.data(), sizeof(char), size, file);
     if (read != size) {
         std::perror("read_whole_file");
+        std::fclose(file);
         return {};
     }
     std::fclose(file);
 
     return buf;
+}
+
+auto write_to_file(std::string_view filepath, std::string_view data) noexcept -> bool {
+    std::ofstream file{std::string{filepath}};
+    if (!file.is_open()) {
+        std::perror("write_to_file");
+        return false;
+    }
+    file << data;
+    return true;
 }
 
 }  // namespace utils

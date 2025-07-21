@@ -44,6 +44,7 @@ namespace utils {
 
 [[nodiscard]] auto join_vec(std::span<std::string_view> lines, std::string_view delim) noexcept -> std::string;
 [[nodiscard]] auto read_whole_file(std::string_view filepath) noexcept -> std::string;
+[[nodiscard]] auto write_to_file(std::string_view filepath, std::string_view data) noexcept -> bool;
 
 // Runs a command in a terminal, escalates using pkexec if escalate is true
 int runCmdTerminal(QString cmd, bool escalate) noexcept;
