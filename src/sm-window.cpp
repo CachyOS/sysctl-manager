@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2024 Vladislav Nepogodin
+// Copyright (C) 2022-2025 Vladislav Nepogodin
 //
 // This file is part of CachyOS sysctl manager.
 //
@@ -20,25 +20,9 @@
 #include "sysctl_option.hpp"
 #include "utils.hpp"
 
-#include <thread>
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnull-dereference"
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
-
-#include <range/v3/algorithm/find_if.hpp>
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+#include <algorithm>  // for find_if
+#include <ranges>     // for ranges::*
+#include <thread>     // for this_thread
 
 #include <fmt/core.h>
 
@@ -81,7 +65,7 @@ auto generate_script_from_options(QTreeWidget* tree_options, std::span<QString> 
 
 void init_options_tree_widget(QTreeWidget* tree_options, std::span<SysctlOption> options) noexcept {
     for (auto&& sysctl_option : options) {
-        auto* widget_item = new QTreeWidgetItem(tree_options); // NOLINT
+        auto* widget_item = new QTreeWidgetItem(tree_options);  // NOLINT
         widget_item->setText(TreeCol::Name, sysctl_option.get_name().data());
         widget_item->setText(TreeCol::Value, sysctl_option.get_value().data());
         widget_item->setText(TreeCol::Displayed, QStringLiteral("true"));
@@ -127,7 +111,8 @@ MainWindow::MainWindow(QWidget* parent)
                 // Go through change_list and remove changed ones
                 auto* tree_options = m_ui->treeOptions;
                 for (auto&& option_name : change_list) {
-                    if (auto result = ranges::find_if(m_options, [&option_name](auto&& option) { return option_name == option.get_name(); }); result != m_options.end()) {
+                    auto functor = [&option_name](auto&& option) { return option_name == option.get_name(); };
+                    if (auto result = std::ranges::find_if(m_options, functor); result != std::ranges::end(m_options)) {
                         if (auto items = tree_options->findItems(QString{option_name.c_str()}, Qt::MatchExactly, TreeCol::Name); !items.isEmpty()) {
                             const auto& item_value = items.at(0)->text(TreeCol::Value).toStdString();
                             if (item_value == result->get_value()) {
@@ -223,7 +208,9 @@ void MainWindow::on_item_double_clicked(QTreeWidgetItem* item, int column) noexc
         break;
     case TreeCol::Name: {
         auto&& item_name = item->text(TreeCol::Name).toStdString();
-        if (auto result = ranges::find_if(m_options, [item_name = std::move(item_name)](auto&& option) { return item_name == option.get_name(); }); result != m_options.end()) {
+
+        auto functor = [item_name = std::move(item_name)](auto&& option) { return item_name == option.get_name(); };
+        if (auto result = std::ranges::find_if(m_options, functor); result != std::ranges::end(m_options)) {
             QDesktopServices::openUrl(QUrl(result->get_doc().data()));
         }
         break;

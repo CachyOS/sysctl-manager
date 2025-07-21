@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2024 Vladislav Nepogodin
+// Copyright (C) 2022-2025 Vladislav Nepogodin
 //
 // This file is part of CachyOS sysctl manager.
 //
@@ -21,24 +21,8 @@
 #include <cstdint>  // for int32_t
 #include <cstdio>   // for FILE, fclose, fopen, fseek
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnull-dereference"
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
-
-#include <range/v3/range/conversion.hpp>
-#include <range/v3/view/join.hpp>
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+#include <ranges>  // for ranges::*
+#include <string>  // for string
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -60,8 +44,8 @@
 
 namespace utils {
 
-auto join_vec(const std::span<std::string_view>& lines, const std::string_view&& delim) noexcept -> std::string {
-    return lines | ranges::views::join(delim) | ranges::to<std::string>();
+auto join_vec(std::span<std::string_view> lines, std::string_view delim) noexcept -> std::string {
+    return lines | std::ranges::views::join_with(delim) | std::ranges::to<std::string>();
 }
 
 auto runCmdTerminal(QString cmd, bool escalate) noexcept -> std::int32_t {
@@ -79,7 +63,7 @@ auto runCmdTerminal(QString cmd, bool escalate) noexcept -> std::int32_t {
     return proc.exitCode();
 }
 
-auto read_whole_file(const std::string_view& filepath) noexcept -> std::string {
+auto read_whole_file(std::string_view filepath) noexcept -> std::string {
     // Use std::fopen because it's faster than std::ifstream
     auto* file = std::fopen(filepath.data(), "rb");
     if (file == nullptr) {

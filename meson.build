@@ -2,7 +2,7 @@ project('cachyos-sysctl-manager', 'cpp',
         version: '1.1.1',
         license: 'GPLv3',
         meson_version: '>=0.59.0',
-        default_options: ['cpp_std=c++20',
+        default_options: ['cpp_std=c++23',
                           'buildtype=debugoptimized',
                           'warning_level=3',
                           'werror=false',
@@ -38,7 +38,6 @@ qt6_dep = dependency('qt6', modules: ['Widgets'])
 
 # Common dependencies
 fmt = dependency('fmt', version : ['>=10.0.0'], fallback : ['fmt', 'fmt_dep'])
-ranges = dependency('range-v3', version : ['>=0.11.0'], fallback : ['range-v3', 'range_dep'])
 
 src_files = files(
     'src/utils.hpp', 'src/utils.cpp',
@@ -112,7 +111,7 @@ endif
 
 add_project_arguments(cc.get_supported_arguments(possible_cc_flags), language : 'cpp')
 
-deps = [qt6_dep, fmt, ranges]
+deps = [qt6_dep, fmt]
 
 prep = qt6.compile_moc(
   headers : ['src/sm-window.hpp'] # These need to be fed through the moc tool before use.

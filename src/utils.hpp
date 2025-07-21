@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2024 Vladislav Nepogodin
+// Copyright (C) 2022-2025 Vladislav Nepogodin
 //
 // This file is part of CachyOS sysctl manager.
 //
@@ -42,8 +42,8 @@
 
 namespace utils {
 
-[[nodiscard]] auto join_vec(const std::span<std::string_view>& lines, const std::string_view&& delim) noexcept -> std::string;
-[[nodiscard]] auto read_whole_file(const std::string_view& filepath) noexcept -> std::string;
+[[nodiscard]] auto join_vec(std::span<std::string_view> lines, std::string_view delim) noexcept -> std::string;
+[[nodiscard]] auto read_whole_file(std::string_view filepath) noexcept -> std::string;
 
 // Runs a command in a terminal, escalates using pkexec if escalate is true
 int runCmdTerminal(QString cmd, bool escalate) noexcept;

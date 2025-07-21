@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2024 Vladislav Nepogodin
+// Copyright (C) 2022-2025 Vladislav Nepogodin
 //
 // This file is part of CachyOS sysctl manager.
 //
@@ -19,30 +19,14 @@
 #include "sysctl_option.hpp"
 #include "utils.hpp"
 
+#include <algorithm>   // for contains
 #include <array>       // for array
 #include <filesystem>  // for recursive_directory_iterator, is_directory
 #include <fstream>     // for ifstream
+#include <ranges>      // for ranges::*
 #include <string>      // for string
 
 #include <fmt/core.h>
-
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnull-dereference"
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
-
-#include <range/v3/algorithm/contains.hpp>
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
 namespace fs = std::filesystem;
 
@@ -103,7 +87,7 @@ std::vector<SysctlOption> SysctlOption::get_options() noexcept {
         }
 
         // Skip deprecated.
-        if (ranges::contains(DEPRECATED, dir_entry.path().filename())) {
+        if (std::ranges::contains(DEPRECATED, dir_entry.path().filename())) {
             continue;
         }
 

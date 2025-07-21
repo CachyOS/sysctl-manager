@@ -33,12 +33,6 @@ CPMAddPackage(
   GIT_TAG 11.2.0
   EXCLUDE_FROM_ALL YES
 )
-CPMAddPackage(
-  NAME range-v3
-  GITHUB_REPOSITORY ericniebler/range-v3
-  GIT_TAG 9aa41d6b8ded2cf5e8007e66a0efd1ab33dbf9a5
-  EXCLUDE_FROM_ALL YES
-)
 
 find_package(PolkitQt6-1 REQUIRED)
 
@@ -60,7 +54,7 @@ endif()
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
-target_compile_features(project_options INTERFACE cxx_std_20)
+target_compile_features(project_options INTERFACE cxx_std_23)
 
 ##
 ## Target
@@ -85,7 +79,7 @@ enable_sanitizers(project_options)
 
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE project_warnings project_options Qt6::Widgets Threads::Threads fmt::fmt range-v3::range-v3)
+target_link_libraries(${PROJECT_NAME} PRIVATE project_warnings project_options Qt6::Widgets Threads::Threads fmt::fmt)
 
 option(ENABLE_UNITY "Enable Unity builds of projects" OFF)
 if(ENABLE_UNITY)
