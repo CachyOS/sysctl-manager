@@ -16,7 +16,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "backtrace.hpp"
 #include "sm-window.hpp"
+
+#include <csignal>
 
 #include <QApplication>
 #include <QSharedMemory>
@@ -108,6 +111,8 @@ void initTranslations(QTranslator& qtTranslatorBase, QTranslator& qtTranslator, 
 }  // namespace
 
 auto main(int argc, char** argv) -> std::int32_t {
+    std::signal(SIGSEGV, [](auto) { manager::backtrace::print_trace(); });
+
     QSharedMemory sharedMemoryLock("CachyOS-SM-lock");
     if (IsInstanceAlreadyRunning(sharedMemoryLock)) {
         return -1;

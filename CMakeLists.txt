@@ -60,6 +60,7 @@ target_compile_features(project_options INTERFACE cxx_std_23)
 ## Target
 ##
 qt_add_executable(${PROJECT_NAME}
+    src/backtrace.hpp src/backtrace.cpp
     src/utils.hpp src/utils.cpp
     src/sysctl_option.hpp src/sysctl_option.cpp
     src/sm-window.hpp src/sm-window.cpp
@@ -79,7 +80,7 @@ enable_sanitizers(project_options)
 
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE project_warnings project_options Qt6::Widgets Threads::Threads fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE project_warnings project_options Qt6::Widgets Threads::Threads fmt::fmt bfd)
 
 option(ENABLE_UNITY "Enable Unity builds of projects" OFF)
 if(ENABLE_UNITY)
